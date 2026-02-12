@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCAS CPG Review - Soliman Anas</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #f0f4f8;
+            --accent-color: #00a8cc;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --error-color: #dc3545;
+            --info-color: #17a2b8;
+            --update-bg: #d1ecf1;
+            --update-text: #0c5460;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--secondary-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px; 
+            position: relative;
+            z-index: 100;
+        }
+
+        .home-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: none; 
+            flex-shrink: 0; 
+        }
+
+        .home-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .header-text { flex-grow: 1; text-align: center; }
+        .header-text h1 { margin: 0; font-size: 1.2rem; font-weight: 600; line-height: 1.2; }
+        .header-text p { margin: 2px 0 0; font-size: 0.8rem; opacity: 0.8; }
+
+        header.has-nav .header-text { text-align: left; padding-right: 40px; }
+
+        /* --- MAIN CONTAINER --- */
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- SECTIONS --- */
+        .section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- HOME MENU --- */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .menu-card {
+            background: white; padding: 25px; border-radius: 12px;
+            box-shadow: var(--shadow); border-left: 5px solid #ccc;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .menu-card.active-card { border-left-color: var(--success-color); }
+        .menu-card.update-card { border-left-color: var(--info-color); }
+        
+        .menu-card h2 { margin: 5px 0; font-size: 1.1rem; color: var(--primary-color); }
+        .menu-card p { margin: 0 0 15px; color: #666; font-size: 0.9rem; }
+        
+        .status-badge {
+            display: inline-block; font-size: 0.75rem; padding: 2px 8px;
+            border-radius: 4px; background: #eee; color: #777;
+            align-self: flex-start; margin-bottom: 10px;
+        }
+        .active-card .status-badge { background: #d4edda; color: #155724; }
+        .update-card .status-badge { background: var(--update-bg); color: var(--update-text); }
+
+        .menu-sub-options { margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-action {
+            flex: 1; padding: 10px; border: none; border-radius: 6px;
+            cursor: pointer; font-weight: 600; font-size: 0.85rem; min-width: 80px;
+        }
+        .btn-flash { background-color: #e3f2fd; color: var(--primary-color); }
+        .btn-quiz { background-color: #e8f5e9; color: var(--success-color); }
+        .btn-summary { background-color: #fff3cd; color: #856404; }
+        .btn-update { background-color: var(--update-bg); color: var(--update-text); }
+
+        /* --- FOOTER --- */
+        footer {
+            background: #fff; padding: 20px; text-align: center;
+            border-top: 1px solid #ddd; font-size: 0.85rem; color: #666; margin-top: 30px;
+        }
+        footer .creator { font-weight: bold; color: var(--primary-color); display: block; margin-bottom: 5px; }
+        footer .disclaimer { font-style: italic; font-size: 0.75rem; opacity: 0.8; }
+
+        /* --- FLASHCARDS UI --- */
+        .scene { width: 100%; height: 300px; perspective: 1000px; margin: 20px 0; cursor: pointer; }
+        .card { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; border-radius: 15px; box-shadow: var(--shadow); }
+        .card.is-flipped { transform: rotateY(180deg); }
+        .card__face {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px; box-sizing: border-box; text-align: center; border-radius: 15px;
+        }
+        .card__face--front { background: white; color: var(--primary-color); border: 2px solid var(--secondary-color); font-size: 1.2rem; }
+        .card__face--back { background: var(--primary-color); color: white; transform: rotateY(180deg); font-size: 1.1rem; }
+        .controls { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .control-btn { padding: 10px 20px; border: none; background: var(--primary-color); color: white; border-radius: 25px; cursor: pointer; }
+        .control-btn:disabled { background: #ccc; }
+        .category-badge { background: #eef; color: var(--primary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
+
+        /* --- QUIZ UI --- */
+        .quiz-setup { text-align: center; padding: 30px 20px; background: white; border-radius: 12px; box-shadow: var(--shadow); }
+        .quiz-setup h2 { color: var(--primary-color); margin-bottom: 10px; }
+        .quiz-setup p { color: #666; margin-bottom: 25px; }
+        
+        /* Updated Button Layout: Single Column Stack */
+        .setup-options { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            max-width: 320px; 
+            margin: 0 auto; 
+        }
+        
+        .setup-btn { 
+            padding: 16px; 
+            background: white; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 10px; 
+            color: var(--text-color); 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .setup-btn:hover { 
+            background: var(--primary-color); 
+            color: white; 
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        
+        /* Special Style for Challenge Mode */
+        .setup-btn.challenge-mode { 
+            background-color: #fff8e1; 
+            border-color: #ffe082; 
+            color: #b7791f;
+            margin-top: 10px;
+        }
+        .setup-btn.challenge-mode:hover {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: black;
+        }
+
+        .quiz-container { background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); }
+        .quiz-question { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--primary-color); }
+        .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+        .option-btn { padding: 15px; border: 2px solid #eee; background: white; border-radius: 8px; text-align: left; cursor: pointer; font-size: 1rem; }
+        .option-btn:hover { background: #f9f9f9; border-color: #ddd; }
+        .option-btn.correct { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .option-btn.wrong { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        
+        .quiz-feedback { margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 0.95rem; display: none; background-color: #f8f9fa; border-left: 5px solid #ccc; }
+        .feedback-title { font-weight: bold; display: block; margin-bottom: 5px; }
+
+        .next-q-btn { margin-top: 15px; width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; display: none; }
+        .score-circle { width: 100px; height: 100px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 0 auto 20px; }
+
+        /* --- SUMMARY & UPDATE STYLES --- */
+        .summary-container { display: grid; gap: 20px; }
+        .sum-card { background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow); border-top: 4px solid var(--primary-color); }
+        .sum-card h3 { margin-top: 0; color: var(--primary-color); border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.1rem; }
+        .sum-card ul { padding-left: 20px; margin-bottom: 0; }
+        .sum-card li { margin-bottom: 8px; line-height: 1.5; color: #444; }
+        .sum-card strong { color: #222; }
+        
+        .red-flag { border-top-color: var(--error-color); }
+        .red-flag h3 { color: var(--error-color); }
+        
+        .new-feature { border-top-color: var(--info-color); }
+        .new-feature h3 { color: var(--info-color); }
+
+        .highlight-box { background: #f8f9fa; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.9rem; border-left: 3px solid var(--info-color); }
+
+    </style>
+</head>
+<body>
+
+    <header id="mainHeader">
+        <button class="home-btn" id="homeBtn" onclick="goHome()">←</button>
+        <div class="header-text">
+            <h1 id="pageTitle">DCAS CPG Review</h1>
+            <p id="pageSubtitle">2025 Guidelines</p>
+        </div>
+    </header>
+
+    <main>
+        <div id="home-section" class="section active">
+            <div class="menu-grid">
+                
+                <div class="menu-card update-card">
+                    <div>
+                        <span class="status-badge">New</span>
+                        <h2>2025 CPG Updates</h2>
+                        <p>Summary of key changes & new protocols.</p>
+                    </div>
+                    <div class="menu-sub-options">
+                        <button class="btn-action btn-update" onclick="startUpdates()">View Updates</button>
+                    </div>
+                </div>
+
+                <div class="menu-card active-card">
+                    <div>
+                        <span class="status-badge">Available</span>
+                        <h2>1.1 Universal Care</h2>
+                        <p>Primary Survey, Vitals, Safety & Resuscitation.</p>
+                    </div>
+                    <div class="menu-sub-options">
+                        <button class="btn-action btn-summary" onclick="startSummary()">Summary</button>
+                        <button class="btn-action btn-flash" onclick="startFlashcards()">Flashcards</button>
+                        <button class="btn-action btn-quiz" onclick="openQuizSetup()">Quiz</button>
+                    </div>
+                </div>
+
+                <div class="menu-card"><div><span class="status-badge">Stay Tuned</span><h2>1.2 Documentation</h2><p>PCR standards & Legal.</p></div></div>
+                <div class="menu-card"><div><span class="status-badge">Stay Tuned</span><h2>1.3 Triage Categories</h2><p>Priority definitions.</p></div></div>
+                <div class="menu-card"><div><span class="status-badge">Stay Tuned</span><h2>1.4 Functional Needs</h2><p>Access needs.</p></div></div>
+            </div>
+        </div>
+
+        <div id="updates-section" class="section">
+            <div class="summary-container">
+                <div class="sum-card new-feature">
+                    <h3>1. Major Structural Changes</h3>
+                    <ul>
+                        <li><strong>Universal Care:</strong> New "Foundation" chapter. Applies to ALL patients (Documentation, Triage, Refusal) before specific care.</li>
+                        <li><strong>General Medical:</strong> Expanded and split into separate, specific guidelines (e.g., Sepsis, Anaphylaxis) instead of one large section.</li>
+                    </ul>
+                </div>
+
+                <div class="sum-card new-feature">
+                    <h3>2. New Clinical Guidelines</h3>
+                    <ul>
+                        <li><strong>Toxicology (Major Update):</strong> New "General Toxicology" foundation.</li>
+                        <li><strong>New Specific Protocols:</strong> Opioid Overdose, Beta-Blocker Overdose, Calcium Channel Blocker Overdose, Organophosphates.</li>
+                        <li><strong>Alcohol:</strong> New "Suspected Alcohol Intoxication" guideline to support decision making.</li>
+                        <li><strong>Airway:</strong> Invasive (Mechanical) Ventilation added.</li>
+                    </ul>
+                </div>
+
+                <div class="sum-card">
+                    <h3>3. Resuscitation & Pediatrics</h3>
+                    <ul>
+                        <li><strong>Newborns:</strong> Specific resuscitation for infants <4 weeks and pre-term.</li>
+                        <li><strong>Separation:</strong> Adult and Pediatric Cardiac Arrest pathways are now clearly separated.</li>
+                        <li><strong>Post-ROSC:</strong> New guidance added for care after return of circulation.</li>
+                    </ul>
+                </div>
+
+                <div class="sum-card">
+                    <h3>4. Operations & Safety</h3>
+                    <ul>
+                        <li><strong>Scope of Practice:</strong> New matrix defining allowed skills per clinical level.</li>
+                        <li><strong>Medication Formulary:</strong> Specific section detailing available medications.</li>
+                    </ul>
+                </div>
+
+                <button class="control-btn" onclick="goHome()" style="width: 100%; margin-top: 20px;">Back to Home</button>
+            </div>
+        </div>
+
+        <div id="summary-section" class="section">
+            <div class="summary-container">
+                <div class="sum-card">
+                    <h3>Assessment Sequences</h3>
+                    <ul>
+                        <li><strong>Trauma:</strong> C-A-B-C (Catastrophic Hemorrhage, Airway, Breathing, Circulation).</li>
+                        <li><strong>Medical:</strong> A-B-C (Airway, Breathing, Circulation).</li>
+                        <li><strong>Cardiac Arrest:</strong> C-A-B (Compressions, Airway, Breathing).</li>
+                        <li><strong>General Impression:</strong> Appearance, Work of Breathing, Circulation (Skin).</li>
+                    </ul>
+                </div>
+                <div class="sum-card">
+                    <h3>Vital Signs Goals</h3>
+                    <ul>
+                        <li><strong>SpO2:</strong> >94% (88-92% for COPD).</li>
+                        <li><strong>Hypotension:</strong> SBP < 90 mmHg.</li>
+                        <li><strong>Hypoglycemia:</strong> BGL < 70 mg/dl.</li>
+                        <li><strong>EtCO2:</strong> 35-45 mmHg.</li>
+                    </ul>
+                </div>
+                <div class="sum-card red-flag">
+                    <h3>CRITICAL RED FLAGS</h3>
+                    <ul>
+                        <li>Apnea or Pulselessness.</li>
+                        <li>Altered Mental Status (GCS < 15).</li>
+                        <li>Severe Hypoxia (<90%) or Hypotension (<90mmHg).</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <strong>KPI:</strong> Request ALS Backup within <strong>1 minute</strong>.
+                    </div>
+                </div>
+                <button class="control-btn" onclick="goHome()" style="width: 100%; margin-top: 20px;">Back to Home</button>
+            </div>
+        </div>
+
+        <div id="flashcard-section" class="section">
+            <div style="text-align: center; color: #666; margin-bottom: 10px;">
+                <span id="fc-progress">Card 1 of 60</span>
+            </div>
+            <div class="scene" id="cardScene" onclick="flipCard()">
+                <div class="card" id="flashcard">
+                    <div class="card__face card__face--front">
+                        <span class="category-badge" id="fc-category">Category</span>
+                        <div id="fc-question">Question</div>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 15px;">(Tap to Flip)</div>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <div id="fc-answer">Answer</div>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="control-btn" onclick="prevCard()">Previous</button>
+                <button class="control-btn" onclick="nextCard()">Next</button>
+            </div>
+        </div>
+
+        <div id="quiz-setup-section" class="section">
+            <div class="quiz-setup">
+                <h2>Quiz Settings</h2>
+                <p>How many questions would you like?</p>
+                <div class="setup-options">
+                    <button class="setup-btn" onclick="initQuiz(10)">10 Questions</button>
+                    <button class="setup-btn" onclick="initQuiz(20)">20 Questions</button>
+                    <button class="setup-btn" onclick="initQuiz(30)">30 Questions</button>
+                    <button class="setup-btn challenge-mode" onclick="initQuiz(60)">Challenge Mode (60)</button>
+                </div>
+                <button onclick="goHome()" style="margin-top: 25px; background: none; border: none; color: #888; text-decoration: underline; cursor: pointer;">Cancel</button>
+            </div>
+        </div>
+
+        <div id="quiz-game-section" class="section">
+            <div id="quiz-game">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: #666;">
+                    <span id="quiz-progress">Question 1/10</span>
+                    <span>Score: <span id="current-score">0</span></span>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-question" id="q-text">Loading...</div>
+                    <div class="quiz-options" id="q-options"></div>
+                    
+                    <div class="quiz-feedback" id="q-feedback">
+                        <span class="feedback-title" id="feedback-title">Explanation</span>
+                        <span id="feedback-text"></span>
+                    </div>
+
+                    <button class="next-q-btn" id="next-q-btn" onclick="nextQuestion()">Next Question</button>
+                </div>
+            </div>
+
+            <div id="quiz-results" style="display: none; text-align: center;">
+                <div class="score-board">
+                    <h2>Quiz Complete!</h2>
+                    <div class="score-circle" id="final-score">0%</div>
+                    <p id="final-msg">Good effort!</p>
+                    <button class="control-btn" onclick="openQuizSetup()">Retake Quiz</button>
+                    <button class="control-btn" onclick="goHome()" style="background: #666; margin-left: 10px;">Home</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <span class="creator">Created by Soliman Anas</span>
+        <div class="disclaimer">
+            Disclaimer: Study aid only. Refer to official DCAS CPGs for clinical protocols.
+        </div>
+    </footer>
+
+    <script>
+        // ==========================================
+        //       DATA: 60 CLINICAL QUIZ QUESTIONS
+        // ==========================================
+        const masterQuestionBank = [
+            // --- PRIMARY SURVEY (1-10) ---
+            { q: "What is the assessment sequence for a Trauma patient?", options: ["A-B-C-D-E", "C-A-B-C", "D-R-A-B-C", "M-A-R-C-H"], correct: 1, explanation: "In trauma, 'C' (Catastrophic Hemorrhage & C-Spine) comes first. The sequence is C-A-B-C: Catastrophic Hemorrhage, Airway, Breathing, Circulation." },
+            { q: "What is the assessment sequence for a Medical patient?", options: ["A-B-C-D-E", "C-A-B-C", "D-R-A-B-C", "Safety-First"], correct: 0, explanation: "Medical patients follow the standard A-B-C sequence: Airway, Breathing, Circulation, Disability, Exposure." },
+            { q: "What is the assessment sequence for a patient in Cardiac Arrest?", options: ["A-B-C", "C-A-B", "D-R-A-B-C", "B-A-C"], correct: 1, explanation: "Cardiac Arrest prioritizes Circulation (Compressions) to circulate oxygenated blood immediately. Sequence: C-A-B." },
+            { q: "What are the 3 elements of the 'General Impression'?", options: ["Airway, Breathing, Circ", "Appearance, Breathing, Activity", "Alertness, Bleeding, Color", "Age, Body type, Complaint"], correct: 1, explanation: "General Impression consists of: 1. Appearance, 2. Work of Breathing, and 3. Activity (Mental Status)." },
+            { q: "In the AVPU scale, what does 'P' stand for?", options: ["Pulse", "Pain", "Pupils", "Pallor"], correct: 1, explanation: "AVPU stands for: Alert, Verbal (responds to voice), Pain (responds to pain/pressure), Unresponsive." },
+            { q: "Where do you check the pulse on an unconscious adult?", options: ["Radial", "Carotid", "Femoral", "Brachial"], correct: 1, explanation: "The Carotid pulse is the central pulse checked in unconscious adults. Radial is for conscious adults." },
+            { q: "Where do you check the pulse on an infant (<1 year)?", options: ["Carotid", "Brachial", "Radial", "Popliteal"], correct: 1, explanation: "Check the Brachial pulse (upper arm) in infants. Their necks are often too short/chubby to reliably find a carotid." },
+            { q: "Normal capillary refill time (CRT) is less than:", options: ["1 second", "2 seconds", "3 seconds", "5 seconds"], correct: 1, explanation: "Normal CRT is < 2 seconds. Delayed CRT (>2s) indicates poor perfusion or shock." },
+            { q: "What is the absolute FIRST step in any call?", options: ["Airway", "Scene Safety", "Circulation", "Call Dispatch"], correct: 1, explanation: "Scene Safety is always the first priority. You cannot help the patient if you become a patient." },
+            { q: "What does 'D' stand for in the primary survey ABCDE?", options: ["Deformity", "Disability", "Danger", "Disease"], correct: 1, explanation: "Disability. This involves a rapid neurological check: GCS, Pupils, and Blood Glucose Level." },
+
+            // --- VITALS & MONITORING (11-20) ---
+            { q: "What is the normal respiratory rate for an adult?", options: ["8-12", "12-20", "20-30", "10-25"], correct: 1, explanation: "12-20 breaths per minute is the normal range for a healthy adult at rest." },
+            { q: "What is the normal heart rate for an adult?", options: ["50-90", "60-100", "70-110", "60-90"], correct: 1, explanation: "60-100 beats per minute. <60 is Bradycardia, >100 is Tachycardia." },
+            { q: "What is the target SpO2 for a standard medical patient?", options: ["100%", ">94%", "88-92%", ">90%"], correct: 1, explanation: "Aim for 94-98%. Do not over-oxygenate (hyperoxia) as it can cause vasoconstriction." },
+            { q: "What is the target SpO2 for a COPD patient?", options: ["100%", "94-98%", "88-92%", ">95%"], correct: 2, explanation: "88-92%. COPD patients rely on a hypoxic drive; too much oxygen can suppress their breathing." },
+            { q: "Hypotension in an adult is generally defined as SBP below:", options: ["110 mmHg", "100 mmHg", "90 mmHg", "80 mmHg"], correct: 2, explanation: "Systolic Blood Pressure < 90 mmHg is the standard threshold for hypotension/shock." },
+            { q: "You initiate Hypoglycemia treatment if BGL is below:", options: ["80 mg/dl", "70 mg/dl", "60 mg/dl", "100 mg/dl"], correct: 1, explanation: "Treat with D10/Glucagon if Blood Glucose is < 70 mg/dl and the patient is symptomatic." },
+            { q: "What does EtCO2 monitoring measure?", options: ["Oxygen in blood", "Carbon dioxide exhaled", "Carbon monoxide", "pH balance"], correct: 1, explanation: "End-Tidal CO2 measures the amount of Carbon Dioxide in exhaled air. It is the gold standard for tube placement and CPR quality." },
+            { q: "What is the normal range for EtCO2?", options: ["20-30 mmHg", "35-45 mmHg", "45-55 mmHg", "90-100 mmHg"], correct: 1, explanation: "35-45 mmHg is the normal physiological range for EtCO2." },
+            { q: "Tachycardia is defined as a heart rate greater than:", options: ["90 bpm", "100 bpm", "110 bpm", "120 bpm"], correct: 1, explanation: "Heart rate > 100 bpm is Tachycardia." },
+            { q: "Bradycardia is defined as a heart rate less than:", options: ["50 bpm", "60 bpm", "70 bpm", "55 bpm"], correct: 1, explanation: "Heart rate < 60 bpm is Bradycardia." },
+
+            // --- MNEMONICS & HISTORY (21-30) ---
+            { q: "In DCAP-BTLS, what does 'S' stand for?", options: ["Severity", "Swelling", "Saturation", "Shock"], correct: 1, explanation: "DCAP-BTLS: Deformities, Contusions, Abrasions, Punctures, Burns, Tenderness, Lacerations, Swelling." },
+            { q: "In SAMPLE history, what does the 'L' stand for?", options: ["Last oral intake", "Last menstrual period", "Level of consciousness", "Location"], correct: 0, explanation: "SAMPLE: Signs/Symptoms, Allergies, Medications, Past History, Last oral intake, Events leading up." },
+            { q: "In SAMPLE history, what does the 'E' stand for?", options: ["Events", "Exposure", "Environment", "Emergency"], correct: 0, explanation: "SAMPLE: Signs/Symptoms, Allergies, Medications, Past History, Last oral intake, Events leading up." },
+            { q: "In OPQRST (pain), what does 'P' stand for?", options: ["Past History", "Provocation/Palliation", "Pain Score", "Pulse"], correct: 1, explanation: "OPQRST: Onset, Provocation/Palliation (what makes it better/worse), Quality, Radiation, Severity, Time." },
+            { q: "In OPQRST (pain), what does 'R' stand for?", options: ["Rate", "Rhythm", "Radiation", "Respiration"], correct: 2, explanation: "OPQRST: Onset, Provocation, Quality, Radiation (does pain move?), Severity, Time." },
+            { q: "In IMIST-AMBO handover, what does 'A' stand for?", options: ["Airway", "Alertness", "Allergies", "Age"], correct: 2, explanation: "AMBO: Allergies, Medications, Background History, Other information." },
+            { q: "In IMIST-AMBO handover, what does 'M' stand for?", options: ["Mechanism", "Medications", "Medical Hx", "Movement"], correct: 1, explanation: "AMBO: Allergies, Medications, Background History, Other information." },
+            { q: "Which mnemonic is used for Stroke Assessment?", options: ["SAMPLE", "BEFAST", "OPQRST", "AEIOU"], correct: 1, explanation: "BEFAST: Balance, Eyes, Face, Arms, Speech, Time." },
+            { q: "GCS: What score is given for 'Confused' verbal response?", options: ["5", "4", "3", "2"], correct: 1, explanation: "Verbal: 5=Oriented, 4=Confused, 3=Inappropriate Words, 2=Incomprehensible Sounds, 1=None." },
+            { q: "GCS: What score is given for 'Spontaneous' eye opening?", options: ["4", "3", "2", "1"], correct: 0, explanation: "Eyes: 4=Spontaneous, 3=To Voice, 2=To Pain, 1=None." },
+
+            // --- CPR & RESUSCITATION (31-40) ---
+            { q: "What is the adult CPR Compression:Breath ratio (single rescuer)?", options: ["15:2", "30:2", "10:1", "Continuous"], correct: 1, explanation: "30 compressions to 2 breaths (30:2) for adults." },
+            { q: "What is the pediatric CPR ratio (2 rescuers)?", options: ["30:2", "15:2", "5:1", "10:2"], correct: 1, explanation: "For children/infants with TWO rescuers, use 15:2. If single rescuer, use 30:2." },
+            { q: "What is the correct compression rate for CPR?", options: ["60-80/min", "80-100/min", "100-120/min", "120-140/min"], correct: 2, explanation: "Compress at a rate of 100-120 beats per minute." },
+            { q: "What is the correct compression depth for adults?", options: ["At least 5cm (2 inches)", "3 cm", "6-7 cm", "1/3 depth"], correct: 0, explanation: "Compress at least 5cm (2 inches) but no more than 6cm (2.4 inches)." },
+            { q: "How often should you switch compressors during CPR?", options: ["Every 1 min", "Every 2 mins", "Every 5 mins", "When tired"], correct: 1, explanation: "Switch every 2 minutes (approx 5 cycles) to maintain high-quality compressions." },
+            { q: "What is the maximum interruption time allowed for breaths/checks?", options: ["5 seconds", "10 seconds", "15 seconds", "20 seconds"], correct: 1, explanation: "Interruptions should be minimized to less than 10 seconds." },
+            { q: "Where is the correct hand placement for adult CPR?", options: ["Upper half of sternum", "Lower half of sternum", "Left side of chest", "Right side of chest"], correct: 1, explanation: "Place hands on the lower half of the sternum (center of the chest)." },
+            { q: "With an advanced airway (ETT/SGA) in place, how do you breathe?", options: ["Pause for 2 breaths every 30", "1 breath every 6 secs", "1 breath every 3 secs", "Asynchronous"], correct: 1, explanation: "Provide 1 breath every 6 seconds (10/min) without pausing compressions." },
+            { q: "What is the first drug administered in Cardiac Arrest (Non-Shockable)?", options: ["Amiodarone", "Atropine", "Adrenaline (Epi)", "Lidocaine"], correct: 2, explanation: "Adrenaline (Epinephrine) 1mg is the first line vasopressor for Asystole/PEA." },
+            { q: "What is the standard energy setting for Adult Biphasic Defibrillation?", options: ["100J", "120-200J", "360J", "50J"], correct: 1, explanation: "Manufacturer specific, but typically starts at 120-200 Joules." },
+
+            // --- OPERATIONS & SAFETY (41-50) ---
+            { q: "How far should you park from a burning vehicle?", options: ["15m", "30m", "50m", "100m"], correct: 2, explanation: "A safe distance is typically at least 30-50m, ideally uphill and upwind." },
+            { q: "In HazMat incidents, which zone is the 'Hot Zone'?", options: ["Support zone", "Contamination zone", "Safe zone", "Hospital zone"], correct: 1, explanation: "Hot Zone = Contamination; Warm Zone = Decon; Cold Zone = Support/Command." },
+            { q: "True or False: Imminent Birth is an exclusion for Airwing transport?", options: ["True", "False"], correct: 0, explanation: "True. Delivering a baby in a helicopter is dangerous due to space/equipment limits. Ground transport is preferred." },
+            { q: "True or False: Violent patients are eligible for Airwing transport?", options: ["True", "False"], correct: 1, explanation: "False. Violent patients pose a catastrophic safety risk to the aircraft and crew." },
+            { q: "How often do you reassess a 'Green' (Non-Critical) patient?", options: ["5 min", "10 min", "15 min", "30 min"], correct: 2, explanation: "Stable/Green patients require reassessment every 15 minutes." },
+            { q: "How often do you reassess a 'Red' (Critical) patient?", options: ["5 min", "10 min", "15 min", "Continuous"], correct: 0, explanation: "Critical/Red patients must be reassessed every 5 minutes." },
+            { q: "What PPE is required for Standard Precautions?", options: ["Gloves only", "Gloves & Glasses", "Gloves, Mask, Glasses, Gown (Risk-based)", "Mask only"], correct: 2, explanation: "Standard precautions require assuming all fluids are infectious. Use Gloves, Mask, Eye protection, and Gown based on exposure risk." },
+            { q: "When lifting, you should primarily use your:", options: ["Back", "Legs/Hips", "Arms", "Shoulders"], correct: 1, explanation: "Lift with your legs and hips (power lift), keeping your back straight and the weight close to your body." },
+            { q: "When is a Tourniquet indicated?", options: ["Minor cuts", "Venous bleeding", "Uncontrolled arterial limb bleed", "Head wounds"], correct: 2, explanation: "Tourniquets are for life-threatening arterial hemorrhage on limbs that cannot be controlled by direct pressure." },
+            { q: "What is the 'Golden Hour' in trauma?", options: ["Time to eat", "Time from injury to surgery", "Time on scene", "Time to call dispatch"], correct: 1, explanation: "It is the window of time (approx 1 hour) from injury to definitive surgical care where survival rates are highest." },
+
+            // --- PEDIATRICS & BURNS (51-60) ---
+            { q: "The Pediatric Assessment Triangle (PAT) consists of Appearance, Circulation, and:", options: ["Airway", "Work of Breathing", "Bleeding", "Alertness"], correct: 1, explanation: "PAT = Appearance, Work of Breathing, and Circulation to Skin." },
+            { q: "In Dubai CPGs, a pediatric patient is defined as age:", options: ["<12", "<=13", "<16", "<18"], correct: 1, explanation: "Pediatric protocols generally apply to children aged 13 years and under." },
+            { q: "What is a late sign of shock (decompensation) in children?", options: ["Tachycardia", "Hypotension", "Crying", "Fever"], correct: 1, explanation: "Children maintain BP for a long time. Hypotension indicates imminent collapse (decompensated shock)." },
+            { q: "Where do you check a pulse on a newborn?", options: ["Carotid", "Brachial / Apical", "Femoral", "Radial"], correct: 1, explanation: "Brachial artery or auscultate the Apical pulse (chest)." },
+            { q: "What rule is used to estimate Burn Surface Area in adults?", options: ["Rule of 9s", "Rule of Palms", "Broselow Tape", "Parkland Formula"], correct: 0, explanation: "The Rule of Nines is the standard method for estimating Total Body Surface Area (TBSA) burned." },
+            { q: "According to Rule of 9s, one adult arm (entire) is:", options: ["4.5%", "9%", "18%", "1%"], correct: 1, explanation: "The entire arm (front and back) accounts for 9% TBSA." },
+            { q: "According to Rule of 9s, the adult anterior torso (Chest+Abdomen) is:", options: ["9%", "18%", "36%", "1%"], correct: 1, explanation: "Chest (9%) + Abdomen (9%) = 18%." },
+            { q: "What is the best position for a shock patient (no spinal injury)?", options: ["Sitting up", "Supine", "Prone", "Recovery"], correct: 1, explanation: "Supine (flat on back). Elevating legs is controversial; flat is generally best to maximize blood flow to the brain." },
+            { q: "The Recovery Position is primarily used for:", options: ["Cardiac arrest", "Unconscious breathing patient", "Spinal injury", "Shock"], correct: 1, explanation: "It maintains the airway and prevents aspiration in unconscious patients who are breathing spontaneously." },
+            { q: "What flow rate is used for a Non-Rebreather Mask (NRB)?", options: ["2-6 LPM", "6-10 LPM", "10-15 LPM", "25 LPM"], correct: 2, explanation: "10-15 LPM is required to keep the reservoir bag inflated and deliver high concentrations (90%+) of Oxygen." }
+        ];
+
+        // ==========================================
+        //         DATA: 60 FLASHCARDS
+        // ==========================================
+        const flashcards = [
+            // PRIMARY SURVEY (1-10)
+            { category: "Primary Survey", question: "What is the assessment sequence for a Trauma patient?", answer: "C - A - B - C\n\n1. Catastrophic Hemorrhage (Control it first!)\n2. Airway (with C-Spine control)\n3. Breathing\n4. Circulation" },
+            { category: "Primary Survey", question: "What is the assessment sequence for a Medical patient?", answer: "A - B - C\n\n1. Airway\n2. Breathing\n3. Circulation\n(Followed by Disability & Exposure)" },
+            { category: "Primary Survey", question: "What is the assessment sequence for Cardiac Arrest?", answer: "C - A - B\n\n1. Circulation (Compressions start immediately)\n2. Airway\n3. Breathing\n\nReason: Oxygenated blood must be circulated to the brain first." },
+            { category: "Primary Survey", question: "What are the 3 elements of the 'General Impression'?", answer: "1. Appearance (Muscle tone, interactivity)\n2. Work of Breathing (Noises, posture)\n3. Circulation to Skin (Color, condition)" },
+            { category: "Primary Survey", question: "What does 'AVPU' stand for?", answer: "A - Alert (Eyes open, tracking)\nV - Verbal (Responds to voice)\nP - Pain (Responds to pain/pressure)\nU - Unresponsive (No response)" },
+            { category: "Primary Survey", question: "What is the first priority at any scene?", answer: "Scene Safety\n\nEnsure the safety of yourself, your crew, the public, and then the patient." },
+            { category: "Primary Survey", question: "What is the 'Golden Hour'?", answer: "The 60-minute window from injury to surgical care.\n\nSurvival rates drop significantly if a trauma patient isn't in the OR within this hour." },
+            { category: "Primary Survey", question: "What defines a 'Critical' (Red) Trauma patient?", answer: "Compromised ABCD, Altered Mental Status, or Significant Mechanism of Injury requiring immediate transport." },
+            { category: "Primary Survey", question: "Where do you check a pulse on an Unconscious Adult?", answer: "Carotid Artery (Neck)\n\nCheck for at least 5 seconds, but no more than 10." },
+            { category: "Primary Survey", question: "Where do you check a pulse on an Infant?", answer: "Brachial Artery (Upper Arm)\n\nThe neck is often too short or chubby to find a carotid pulse reliably." },
+
+            // VITALS & SIGNS (11-20)
+            { category: "Vitals", question: "Normal Adult Pulse Rate?", answer: "60 - 100 beats per minute\n\n<60 = Bradycardia\n>100 = Tachycardia" },
+            { category: "Vitals", question: "Normal Adult Respiratory Rate?", answer: "12 - 20 breaths per minute\n\n<12 = Bradypnea\n>20 = Tachypnea" },
+            { category: "Vitals", question: "Normal Capillary Refill Time (CRT)?", answer: "Less than 2 seconds\n\nDelayed refill (>2s) suggests poor perfusion (shock)." },
+            { category: "Vitals", question: "Target SpO2 for general patients?", answer: "> 94% (94-98%)\n\nAvoid 100% unless Carbon Monoxide poisoning is suspected." },
+            { category: "Vitals", question: "Target SpO2 for COPD patients?", answer: "88% - 92%\n\nHigher oxygen levels can suppress their hypoxic drive to breathe." },
+            { category: "Vitals", question: "Definition of Hypotension (Adult)?", answer: "Systolic Blood Pressure < 90 mmHg\n\nRequires fluid resuscitation if symptomatic." },
+            { category: "Vitals", question: "Normal Blood Glucose Level (BGL)?", answer: "70 - 140 mg/dl\n\nHypoglycemia protocol starts at < 70 mg/dl." },
+            { category: "Vitals", question: "What is EtCO2 used for?", answer: "End-Tidal CO2 monitoring\n\nNormal Range: 35-45 mmHg.\nUsed to confirm tube placement and monitor CPR quality." },
+            { category: "Vitals", question: "What constitutes a Fever?", answer: "Temperature > 38.0°C (100.4°F)\n\nSepsis Alert if accompanied by infection signs." },
+            { category: "Vitals", question: "Pulse Pressure Definition?", answer: "The difference between Systolic and Diastolic BP.\n\nNarrowing pulse pressure is an early sign of shock." },
+
+            // MNEMONICS EXPLAINED (21-30)
+            { category: "Mnemonic", question: "Explain 'DCAP-BTLS' (Trauma Survey)", answer: "D - Deformities\nC - Contusions\nA - Abrasions\nP - Punctures\n\nB - Burns\nT - Tenderness\nL - Lacerations\nS - Swelling" },
+            { category: "Mnemonic", question: "Explain 'SAMPLE' (History Taking)", answer: "S - Signs/Symptoms\nA - Allergies\nM - Medications\nP - Past History\nL - Last Oral Intake\nE - Events leading up" },
+            { category: "Mnemonic", question: "Explain 'OPQRST' (Pain Assessment)", answer: "O - Onset (Active vs Rest)\nP - Provocation (Better/Worse?)\nQ - Quality (Sharp/Dull?)\nR - Radiation (Moves?)\nS - Severity (0-10)\nT - Time (Duration)" },
+            { category: "Mnemonic", question: "Explain 'IMIST-AMBO' (Handover)", answer: "I - Identification\nM - Mechanism/Medical Complaint\nI - Injuries\nS - Signs (Vitals)\nT - Treatment\n\nA - Allergies\nM - Medications\nB - Background\nO - Other info" },
+            { category: "Mnemonic", question: "Explain 'BEFAST' (Stroke)", answer: "B - Balance (Loss of)\nE - Eyes (Blurred vision)\nF - Face (Droop)\nA - Arms (Drift)\nS - Speech (Slurred)\nT - Time (Last seen normal)" },
+            { category: "Mnemonic", question: "Explain 'AEIOU-TIPS' (Altered Mental Status)", answer: "A - Alcohol\nE - Epilepsy\nI - Insulin\nO - Overdose\nU - Uremia\n\nT - Trauma\nI - Infection\nP - Psychosis\nS - Stroke" },
+            { category: "Mnemonic", question: "Explain 'PASTE' (Respiratory)", answer: "P - Provocation\nA - Associated Chest Pain\nS - Sputum (Color/Amount)\nT - Talking tiredness (Words per breath)\nE - Exacerbation" },
+            { category: "Mnemonic", question: "Explain 'APGAR' (Newborn)", answer: "A - Appearance (Color)\nP - Pulse (>100)\nG - Grimace (Reaction)\nA - Activity (Muscle Tone)\nR - Respiration (Cry)\n\nScore 0-2 for each." },
+            { category: "Mnemonic", question: "Explain 'DICE' (Drug Calculations)", answer: "D - Drug (Right drug?)\nI - Integrity (Color/Expiry?)\nC - Concentration\nE - Equipment required" },
+            { category: "Mnemonic", question: "Explain 'SLUDGE' (Organophosphate Poisoning)", answer: "S - Salivation\nL - Lacrimation (Tears)\nU - Urination\nD - Defecation\nG - GI Upset\nE - Emesis (Vomiting)" },
+
+            // CPR & RESUSCITATION (31-40)
+            { category: "CPR", question: "Adult CPR Ratio (1 or 2 Rescuers)", answer: "30 Compressions : 2 Breaths" },
+            { category: "CPR", question: "Pediatric CPR Ratio (2 Rescuers)", answer: "15 Compressions : 2 Breaths\n\n(Use 30:2 if you are alone)" },
+            { category: "CPR", question: "Compression Rate", answer: "100 - 120 compressions per minute\n\n(Push hard, push fast)" },
+            { category: "CPR", question: "Adult Compression Depth", answer: "5 - 6 cm (2 - 2.4 inches)\n\nAllow full chest recoil." },
+            { category: "CPR", question: "Infant Compression Depth", answer: "4 cm (1.5 inches)\n\nOr 1/3 depth of the chest." },
+            { category: "CPR", question: "Ventilation Rate with Advanced Airway", answer: "1 breath every 6 seconds\n(10 breaths/min)\n\nDo NOT pause compressions." },
+            { category: "CPR", question: "How often to switch compressors?", answer: "Every 2 minutes (approx 5 cycles)\n\nTo prevent fatigue and poor quality compressions." },
+            { category: "CPR", question: "Correct Hand Placement (Adult)", answer: "Lower half of the sternum\n(Center of the chest)" },
+            { category: "CPR", question: "Shockable Rhythms", answer: "1. Ventricular Fibrillation (VF)\n2. Pulseless Ventricular Tachycardia (VT)" },
+            { category: "CPR", question: "Non-Shockable Rhythms", answer: "1. Asystole (Flatline)\n2. Pulseless Electrical Activity (PEA)" },
+
+            // OPERATIONS & SAFETY (41-50)
+            { category: "Operations", question: "Safe Parking Distance (Car Fire)", answer: "At least 30 meters (100 feet)\n\nIdeally uphill and upwind." },
+            { category: "Operations", question: "HazMat Zones", answer: "Hot Zone: Contamination\nWarm Zone: Decontamination\nCold Zone: Support/Command (Safe)" },
+            { category: "Operations", question: "Airwing Exclusion Criteria", answer: "1. Imminent Birth\n2. Violent/Psychiatric Patients\n3. HazMat Contamination\n4. Cardiac Arrest (Relative)" },
+            { category: "Operations", question: "Standard Precautions (PPE)", answer: "Assume ALL body fluids are infectious.\n\nWear: Gloves, Mask, Eye Protection, Gown (as needed)." },
+            { category: "Operations", question: "Reassessment: Critical (Red)", answer: "Every 5 minutes\n\nCheck vitals and interventions." },
+            { category: "Operations", question: "Reassessment: Stable (Green)", answer: "Every 15 minutes" },
+            { category: "Operations", question: "Safe Lifting (Power Lift)", answer: "1. Feet shoulder-width apart\n2. Back straight\n3. Lift with legs (not back)\n4. Keep weight close to body" },
+            { category: "Operations", question: "When to use a Tourniquet?", answer: "For life-threatening arterial bleeding on a limb that cannot be controlled by direct pressure." },
+            { category: "Operations", question: "Tourniquet Application", answer: "Apply high and tight on the limb.\nTwist until bleeding stops.\nMark time of application." },
+            { category: "Operations", question: "Mass Casualty Triage Colors", answer: "Red: Immediate (Life threat)\nYellow: Delayed (Serious but stable)\nGreen: Minor (Walking wounded)\nBlack: Deceased/Expectant" },
+
+            // PEDIATRICS & SPECIAL (51-60)
+            { category: "Pediatrics", question: "Pediatric Age Cutoff", answer: "13 Years and under\n\n(>13 is treated as an adult)" },
+            { category: "Pediatrics", question: "Pediatric Assessment Triangle (PAT)", answer: "1. Appearance (Tone, Interactiveness)\n2. Work of Breathing\n3. Circulation to Skin (Mottling, Pallor)" },
+            { category: "Pediatrics", question: "Sign of Decompensated Shock (Peds)", answer: "Hypotension\n\nKids compensate well (high HR). Once BP drops, cardiac arrest is imminent." },
+            { category: "Pediatrics", question: "Geriatric Definition", answer: "65 Years and older\n\n(High risk for under-triage)" },
+            { category: "Burns", question: "Rule of Nines (Adult Arm)", answer: "9% Total Body Surface Area (TBSA)\n(4.5% Front + 4.5% Back)" },
+            { category: "Burns", question: "Rule of Nines (Adult Leg)", answer: "18% Total Body Surface Area (TBSA)\n(9% Front + 9% Back)" },
+            { category: "Burns", question: "Rule of Nines (Adult Torso)", answer: "Chest = 9%\nAbdomen = 9%\nBack = 18%\nTotal Trunk = 36%" },
+            { category: "Special", question: "Position for Shock Patient", answer: "Supine (Flat on back)\n\nKeeps blood flowing to the brain. Keep warm." },
+            { category: "Special", question: "Recovery Position", answer: "Lateral Recumbent (On side)\n\nFor unconscious patients with a pulse and breathing (prevents aspiration)." },
+            { category: "Special", question: "Oxygen Flow: Non-Rebreather", answer: "10 - 15 Liters Per Minute (LPM)\n\nEnsure the reservoir bag stays inflated." }
+        ];
+
+        // ==========================================
+        //           APP LOGIC (FUNCTIONS)
+        // ==========================================
+
+        // --- NAVIGATION STATE ---
+        function goHome() {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.getElementById('home-section').classList.add('active');
+            
+            // UI Resets
+            document.getElementById('homeBtn').style.display = 'none';
+            document.querySelector('header').classList.remove('has-nav');
+            document.getElementById('pageTitle').textContent = "DCAS CPG Review";
+            document.getElementById('pageSubtitle').textContent = "2025 Guidelines";
+        }
+
+        function showSection(id, title) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            // UI Updates
+            document.getElementById('homeBtn').style.display = 'block';
+            document.querySelector('header').classList.add('has-nav');
+            document.getElementById('pageTitle').textContent = title;
+            document.getElementById('pageSubtitle').textContent = "";
+        }
+
+        function startSummary() {
+            showSection('summary-section', 'Universal Care Summary');
+        }
+
+        function startUpdates() {
+            showSection('updates-section', '2025 CPG Updates');
+        }
+
+        // --- FLASHCARD LOGIC ---
+        let fcIndex = 0;
+        
+        function startFlashcards() {
+            fcIndex = 0;
+            updateFlashcard();
+            showSection('flashcard-section', 'Universal Care Flashcards');
+        }
+
+        function updateFlashcard() {
+            const card = document.getElementById('flashcard');
+            card.classList.remove('is-flipped');
+            
+            // Wait for flip back before changing text
+            setTimeout(() => {
+                const data = flashcards[fcIndex];
+                document.getElementById('fc-category').textContent = data.category;
+                document.getElementById('fc-question').textContent = data.question;
+                
+                // Use innerText to preserve line breaks (\n)
+                document.getElementById('fc-answer').innerText = data.answer;
+                
+                document.getElementById('fc-progress').textContent = `Card ${fcIndex + 1} of ${flashcards.length}`;
+            }, 200);
+        }
+
+        function flipCard() {
+            document.getElementById('flashcard').classList.toggle('is-flipped');
+        }
+
+        function nextCard() {
+            if (fcIndex < flashcards.length - 1) {
+                fcIndex++;
+                updateFlashcard();
+            }
+        }
+
+        function prevCard() {
+            if (fcIndex > 0) {
+                fcIndex--;
+                updateFlashcard();
+            }
+        }
+
+        // --- QUIZ LOGIC (RANDOMIZED) ---
+        let currentQuizQueue = [];
+        let qIndex = 0;
+        let score = 0;
+
+        function openQuizSetup() {
+            showSection('quiz-setup-section', 'Quiz Setup');
+        }
+
+        function initQuiz(count) {
+            // 1. Shuffle the master bank
+            const shuffled = [...masterQuestionBank].sort(() => 0.5 - Math.random());
+            
+            // 2. Slice to requested amount (or max available)
+            const actualCount = Math.min(count, shuffled.length);
+            currentQuizQueue = shuffled.slice(0, actualCount);
+            
+            // 3. Reset stats
+            qIndex = 0;
+            score = 0;
+            
+            // 4. Start
+            updateScore();
+            loadQuestion();
+            showSection('quiz-game-section', 'Clinical Quiz');
+            document.getElementById('quiz-results').style.display = 'none';
+            document.getElementById('quiz-game').style.display = 'block';
+        }
+
+        function loadQuestion() {
+            const data = currentQuizQueue[qIndex];
+            document.getElementById('q-text').textContent = data.q;
+            document.getElementById('quiz-progress').textContent = `Question ${qIndex + 1}/${currentQuizQueue.length}`;
+            
+            const optionsDiv = document.getElementById('q-options');
+            optionsDiv.innerHTML = '';
+            
+            // Reset Feedback Area
+            const feedbackBox = document.getElementById('q-feedback');
+            feedbackBox.style.display = 'none';
+            feedbackBox.className = 'quiz-feedback'; // Reset colors
+            document.getElementById('next-q-btn').style.display = 'none';
+
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(idx, btn);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIdx, btnElement) {
+            // Disable all buttons
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            const currentQ = currentQuizQueue[qIndex];
+            const correctIdx = currentQ.correct;
+            const feedbackBox = document.getElementById('q-feedback');
+            const feedbackText = document.getElementById('feedback-text');
+            const feedbackTitle = document.getElementById('feedback-title');
+
+            if (selectedIdx === correctIdx) {
+                btnElement.classList.add('correct');
+                score++;
+                feedbackTitle.textContent = "Correct! ✅";
+                feedbackBox.style.borderLeftColor = "#28a745";
+                feedbackBox.style.backgroundColor = "#d4edda";
+            } else {
+                btnElement.classList.add('wrong');
+                buttons[correctIdx].classList.add('correct');
+                feedbackTitle.textContent = "Incorrect ❌";
+                feedbackBox.style.borderLeftColor = "#dc3545";
+                feedbackBox.style.backgroundColor = "#f8d7da";
+            }
+
+            // Show Explanation
+            feedbackText.textContent = currentQ.explanation || "No explanation available.";
+            feedbackBox.style.display = 'block';
+            document.getElementById('next-q-btn').style.display = 'block';
+            updateScore();
+        }
+
+        function nextQuestion() {
+            qIndex++;
+            if (qIndex < currentQuizQueue.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('current-score').textContent = score;
+        }
+
+        function showResults() {
+            document.getElementById('quiz-game').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'block';
+            const percentage = Math.round((score / currentQuizQueue.length) * 100);
+            document.getElementById('final-score').textContent = percentage + '%';
+            
+            let msg = "";
+            if (percentage >= 80) msg = "Excellent Job! You know your CPGs.";
+            else if (percentage >= 60) msg = "Good passing score.";
+            else msg = "Keep studying!";
+            document.getElementById('final-msg').textContent = msg;
+        }
+    </script>
+</body>
+</html>
