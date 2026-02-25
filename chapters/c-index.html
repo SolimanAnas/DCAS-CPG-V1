@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>DCAS CPG 2025</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0056b3">
+    <link rel="apple-touch-icon" href="../icons/icon.png">
+    <!-- Apply saved theme + font-size before CSS renders — prevents flash -->
+    <script>
+        (function(){
+            var t = localStorage.getItem('theme') || 'dark';
+            var f = localStorage.getItem('dcas_font_size') || 'medium';
+            document.documentElement.setAttribute('data-theme', t);
+            document.documentElement.setAttribute('data-font-size', f);
+        })();
+    </script>
+</head>
+<body>
+<header>
+    <div class="header-left">
+        <button class="icon-btn" id="homeBtn" title="Go Home" aria-label="Home">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
+                <path d="M9 21V12h6v9"/>
+            </svg>
+        </button>
+        <div class="header-text">
+            <h1 id="pageTitle">DCAS CPG 2025</h1>
+            <p id="pageSubtitle">Loading...</p>
+        </div>
+    </div>
+    <div class="header-right">
+        <button class="icon-btn" id="themeToggle" title="Switch Theme">🎨</button>
+        <div class="stats-badge" id="liveStatsBadge">
+            <span>📊 <span id="statsAttempts">-</span></span>
+            <div class="stats-divider"></div>
+            <span>🎯 <span id="statsCritical">-</span></span>
+        </div>
+        <a href="c-index.html?view=summary" class="icon-btn" id="headerIndexBtn" title="Index">📋</a>
+        <a href="../about.html" class="icon-btn" id="headerAboutBtn" title="About">ℹ️</a>
+    </div>
+    <!-- Progress bar inside header so app.js moves it to body (fixes fixed-in-sticky bug) -->
+    <div class="progress-container-scroll" id="pageProgressBar">
+        <div class="progress-bar-scroll"></div>
+    </div>
+</header>
+<main id="mainContent"></main>
+<footer>
+    <div>Created by Soliman Anas · for study aid only</div>
+    <div><a href="../about.html">About &amp; Disclaimer</a> · Refer to DCAS CPG and memo for procedures and protocols.</div>
+</footer>
+<script src="../content/c-index.js"></script>
+<script src="../app.js"></script>
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('../sw.js').catch(function(){});
+        });
+    }
+</script>
+</body>
+</html>
