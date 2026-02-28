@@ -1,4 +1,4 @@
-// TEMPORARY DISABLED - No caching, always fetch from network
+// TEMPORARY DISABLED – no caching, always fetch from network
 self.addEventListener('install', () => {
   self.skipWaiting(); // Activate immediately
 });
