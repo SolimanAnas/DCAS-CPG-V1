@@ -1,4 +1,4 @@
-/* ========== app.js – DCAS CPG 2025 (Final Clean) ========== */
+/* ========== app.js – DCAS CPG 2025 (with AI Chat) ========== */
 (function(){
 "use strict";
 
@@ -1283,4 +1283,341 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// ============================================================
+// 🤖 AI CHAT INTEGRATION – added dynamically, no HTML changes needed
+// ============================================================
+
+(function initAIChat() {
+    // Configuration
+    const API_ENDPOINT = '/api/chat'; // Change if your backend uses a different path
+
+    // Inject CSS styles for the chat widget
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
+        /* Floating AI button */
+        .ai-chat-button {
+            position: fixed;
+            bottom: 90px;   /* above your scroll buttons */
+            right: 15px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary-accent, #0056b3);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .ai-chat-button:hover {
+            transform: scale(1.1);
+            background: var(--toggle-active, #0077be);
+        }
+        .ai-chat-button.hidden {
+            display: none;
+        }
+
+        /* Chat window */
+        .ai-chat-window {
+            position: fixed;
+            bottom: 90px;
+            right: 15px;
+            width: 320px;
+            height: 450px;
+            background: var(--glass-bg, #1e2a36);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border, #3a4a5a);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1001;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .ai-chat-window.open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .ai-chat-header {
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .ai-chat-header span {
+            color: var(--text-primary, white);
+        }
+        .ai-chat-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary, #aaa);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .ai-chat-close:hover {
+            color: white;
+        }
+
+        .ai-chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 16px;
+            line-height: 1.4;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+        }
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary-accent, #0056b3);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.assistant {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary, white);
+            border-bottom-left-radius: 4px;
+        }
+        .message.error {
+            background: #ff4444;
+            color: white;
+            align-self: center;
+            max-width: 90%;
+        }
+        .message.assistant p {
+            margin: 0 0 8px;
+        }
+        .message.assistant p:last-child {
+            margin-bottom: 0;
+        }
+        .message.assistant ul, .message.assistant ol {
+            margin: 4px 0;
+            padding-left: 20px;
+        }
+
+        .ai-chat-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.1);
+        }
+        .ai-chat-input-area input {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 10px 15px;
+            color: var(--text-primary, white);
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .ai-chat-input-area input::placeholder {
+            color: var(--text-secondary, #aaa);
+        }
+        .ai-chat-input-area button {
+            background: var(--primary-accent, #0056b3);
+            border: none;
+            border-radius: 30px;
+            padding: 10px 15px;
+            margin-left: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .ai-chat-input-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    `;
+    document.head.appendChild(styleEl);
+
+    // Helper to load external scripts dynamically
+    function loadScript(src, callback) {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = callback;
+        script.onerror = () => console.error('Failed to load ' + src);
+        document.head.appendChild(script);
+    }
+
+    // Ensure marked.js is loaded (for Markdown rendering)
+    function ensureMarked(callback) {
+        if (window.marked) {
+            callback();
+        } else {
+            loadScript('https://cdn.jsdelivr.net/npm/marked/marked.min.js', callback);
+        }
+    }
+
+    // Create and append chat elements
+    function createChatElements() {
+        // Check if already added
+        if (document.getElementById('aiChatButton')) return;
+
+        const chatButton = document.createElement('button');
+        chatButton.className = 'ai-chat-button';
+        chatButton.innerHTML = '🤖';
+        chatButton.setAttribute('aria-label', 'Open AI Chat');
+        chatButton.id = 'aiChatButton';
+
+        const chatWindow = document.createElement('div');
+        chatWindow.className = 'ai-chat-window';
+        chatWindow.id = 'aiChatWindow';
+        chatWindow.innerHTML = `
+            <div class="ai-chat-header">
+                <span>💬 DCAS AI Assistant</span>
+                <button class="ai-chat-close" id="aiChatClose">✕</button>
+            </div>
+            <div class="ai-chat-messages" id="aiChatMessages">
+                <div class="message assistant">Hello! Ask me anything about DCAS CPG 2025 guidelines.</div>
+            </div>
+            <div class="ai-chat-input-area">
+                <input type="text" id="aiChatInput" placeholder="Type your question..." />
+                <button id="aiChatSend">Send</button>
+            </div>
+        `;
+
+        document.body.appendChild(chatButton);
+        document.body.appendChild(chatWindow);
+
+        const btn = chatButton;
+        const windowEl = chatWindow;
+        const closeBtn = document.getElementById('aiChatClose');
+        const messagesEl = document.getElementById('aiChatMessages');
+        const inputEl = document.getElementById('aiChatInput');
+        const sendBtn = document.getElementById('aiChatSend');
+
+        let isOpen = false;
+
+        function openChat() {
+            windowEl.classList.add('open');
+            btn.classList.add('hidden');
+            isOpen = true;
+            inputEl.focus();
+        }
+        function closeChat() {
+            windowEl.classList.remove('open');
+            btn.classList.remove('hidden');
+            isOpen = false;
+        }
+
+        btn.addEventListener('click', openChat);
+        closeBtn.addEventListener('click', closeChat);
+
+        // Close chat when clicking outside (optional)
+        document.addEventListener('click', (e) => {
+            if (isOpen && !windowEl.contains(e.target) && !btn.contains(e.target)) {
+                closeChat();
+            }
+        });
+
+        async function sendMessage() {
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            inputEl.disabled = true;
+            sendBtn.disabled = true;
+
+            // Add user message
+            addMessage(text, 'user');
+            inputEl.value = '';
+
+            // Show typing indicator
+            const typingId = showTypingIndicator();
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                removeTypingIndicator(typingId);
+                // Render markdown in assistant messages
+                if (window.marked) {
+                    addMessage(window.marked.parse(data.reply), 'assistant', true);
+                } else {
+                    addMessage(data.reply, 'assistant');
+                }
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                inputEl.disabled = false;
+                sendBtn.disabled = false;
+                inputEl.focus();
+            }
+        }
+
+        function addMessage(text, role, isMarkdown = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}`;
+            if (isMarkdown) {
+                msgDiv.innerHTML = text;  // already parsed markdown
+            } else {
+                msgDiv.textContent = text;
+            }
+            messagesEl.appendChild(msgDiv);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const id = 'typing-' + Date.now();
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant typing';
+            typingDiv.id = id;
+            typingDiv.textContent = '🤖 ...';
+            messagesEl.appendChild(typingDiv);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+            return id;
+        }
+
+        function removeTypingIndicator(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        inputEl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    }
+
+    // Initialise when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            ensureMarked(createChatElements);
+        });
+    } else {
+        ensureMarked(createChatElements);
+    }
 })();
+
+})(); // end of main app closure
