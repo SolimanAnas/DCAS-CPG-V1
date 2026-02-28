@@ -1,1 +1,219 @@
-1
+/* ========== AI Chat Widget Styles ========== */
+
+/* Floating AI button */
+.ai-chat-button {
+    position: fixed;
+    bottom: 90px;   /* above your scroll buttons */
+    right: 15px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primary-accent, #0056b3);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.ai-chat-button:hover {
+    transform: scale(1.1);
+    background: var(--toggle-active, #0077be);
+}
+
+.ai-chat-button.hidden {
+    display: none;
+}
+
+/* Chat window */
+.ai-chat-window {
+    position: fixed;
+    bottom: 90px;
+    right: 15px;
+    width: 320px;
+    height: 450px;
+    background: var(--glass-bg, #1e2a36);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border, #3a4a5a);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1001;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ai-chat-window.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.ai-chat-header {
+    padding: 15px;
+    background: rgba(0,0,0,0.2);
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.ai-chat-header span {
+    color: var(--text-primary, white);
+}
+
+.ai-chat-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary, #aaa);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.ai-chat-close:hover {
+    color: white;
+}
+
+/* Messages container */
+.ai-chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 16px;
+    line-height: 1.4;
+    font-size: 0.9rem;
+    word-wrap: break-word;
+}
+
+.message.user {
+    align-self: flex-end;
+    background: var(--primary-accent, #0056b3);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message.assistant {
+    align-self: flex-start;
+    background: rgba(255,255,255,0.1);
+    color: var(--text-primary, white);
+    border-bottom-left-radius: 4px;
+}
+
+.message.error {
+    background: #ff4444;
+    color: white;
+    align-self: center;
+    max-width: 90%;
+}
+
+/* Markdown formatting inside assistant messages */
+.message.assistant p {
+    margin: 0 0 8px;
+}
+.message.assistant p:last-child {
+    margin-bottom: 0;
+}
+.message.assistant ul,
+.message.assistant ol {
+    margin: 4px 0;
+    padding-left: 20px;
+}
+.message.assistant pre {
+    background: rgba(0,0,0,0.3);
+    padding: 8px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+.message.assistant code {
+    font-family: monospace;
+    background: rgba(0,0,0,0.2);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+.message.assistant strong {
+    font-weight: 700;
+    color: var(--primary-accent);
+}
+.message.assistant em {
+    font-style: italic;
+}
+.message.assistant h1,
+.message.assistant h2,
+.message.assistant h3,
+.message.assistant h4 {
+    margin: 8px 0 4px;
+    color: var(--primary-accent);
+}
+
+/* Typing indicator */
+.message.assistant.typing {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Input area */
+.ai-chat-input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid var(--glass-border);
+    background: rgba(0,0,0,0.1);
+}
+
+.ai-chat-input-area input {
+    flex: 1;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    padding: 10px 15px;
+    color: var(--text-primary, white);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.ai-chat-input-area input::placeholder {
+    color: var(--text-secondary, #aaa);
+}
+
+.ai-chat-input-area button {
+    background: var(--primary-accent, #0056b3);
+    border: none;
+    border-radius: 30px;
+    padding: 10px 15px;
+    margin-left: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ai-chat-input-area button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .ai-chat-window {
+        width: 280px;
+        height: 400px;
+        right: 10px;
+        bottom: 80px;
+    }
+} 
