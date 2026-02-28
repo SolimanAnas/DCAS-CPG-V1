@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="styles.css">
+    <!-- 🔹 AI CSS -->
+    <link rel="stylesheet" href="static/css/ai.css">
     
     <!-- PWA Manifest and icons -->
     <link rel="manifest" href="manifest.json">
@@ -1133,7 +1135,7 @@
     })();
 </script>
 
-    <!-- Add this just before the closing </script> in index.html -->
+<!-- Add this just before the closing </script> in index.html -->
 <script>
     // ---------- SCROLL POSITION MEMORY ----------
     (function() {
@@ -1165,7 +1167,13 @@
         restoreScroll();
     })();
 </script>
-    
+
+<!-- 🔹 Marked.js (Markdown Renderer) -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<!-- 🔹 AI Script -->
+<script src="static/js/ai.js"></script>
+
 <!-- Service Worker Registration -->
 <script>
     if ('serviceWorker' in navigator) {
