@@ -4,7 +4,7 @@
     "use strict";
 
     // ---------- CONFIGURATION ----------
-    const API_ENDPOINT = '/api/chat';  // relative URL to your Flask backend
+    const API_ENDPOINT = 'https://dcas-cpg-v1.onrender.com/api/chat';  // relative URL to your Flask backend
 
     // ---------- UTILITY: LOAD MARKED IF MISSING ----------
     function loadMarked(callback) {
