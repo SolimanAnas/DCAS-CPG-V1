@@ -47,20 +47,38 @@ def chat():
         "Content-Type": "application/json"
     }
 
+    # 🔁 Updated payload with strict DCAS CPG 2025 system prompt
     payload = {
-        "model": "deepseek/deepseek-chat",
-        "messages": [
+        'model': 'deepseek/deepseek-chat',
+        'messages': [
             {
-                "role": "system",
-                "content": "You are a helpful assistant for DCAS CPG 2025 guidelines."
+                'role': 'system',
+                'content': """
+You are the official DCAS CPG 2025 AI assistant.
+
+STRICT RULES:
+- Answer ONLY according to DCAS CPG 2025 prehospital guidelines.
+- Do NOT reference ACC, AHA, ESC, or any external organizations.
+- Do NOT provide hospital-level management unless clearly included in DCAS CPG.
+- Keep answers concise and structured.
+- Use bullet points.
+- Focus on EMS assessment and treatment.
+- If information is not in DCAS CPG, say:
+  "Not specified in DCAS CPG 2025."
+
+Tone:
+- Direct
+- Clinical
+- EMS-focused
+- No long explanations.
+"""
             },
             {
-                "role": "user",
-                "content": user_message
+                'role': 'user',
+                'content': user_message
             }
         ],
-        "max_tokens": 500,
-        "temperature": 0.3
+        'max_tokens': 250
     }
 
     try:
