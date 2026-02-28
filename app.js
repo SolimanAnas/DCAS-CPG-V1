@@ -1288,8 +1288,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================
 
 (function initAIChat() {
-    // Configuration
-    const API_ENDPOINT = '/api/chat'; // Change if your backend uses a different path
+    // 🔁 CHANGED: use the deployed Render backend
+    const API_ENDPOINT = 'https://dcas-cpg-v1.onrender.com/api/chat';
 
     // Inject CSS styles for the chat widget
     const styleEl = document.createElement('style');
