@@ -5,8 +5,8 @@ import os
 
 app = Flask(__name__)
 
-# Allow CORS from anywhere (GitHub Pages / Cloudflare)
-CORS(app)
+# Explicit CORS: allow all origins for /api/* routes
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Load OpenRouter API key from environment
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
@@ -20,8 +20,12 @@ def health_check():
     return jsonify({"status": "DCAS CPG AI backend is running"}), 200
 
 
-@app.route("/api/chat", methods=["POST"])
+@app.route("/api/chat", methods=["POST", "OPTIONS"])
 def chat():
+    # Handle preflight OPTIONS request
+    if request.method == "OPTIONS":
+        return '', 200
+
     if not request.is_json:
         return jsonify({"error": "Request must be JSON"}), 400
 
@@ -86,7 +90,7 @@ def chat():
         return jsonify({"error": "Internal server error"}), 500
 
 
-# IMPORTANT: Render requires binding to its provided PORT
+# Render requires binding to its provided PORT
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
