@@ -5,3 +5,5 @@ Werkzeug
 google-auth
 requests
 gunicorn
+Flask-CORS
+python-dotenv
